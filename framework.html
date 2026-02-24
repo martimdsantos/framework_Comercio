@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Framework 4D — E-Commerce</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --bg:     #0A1628;
+  --card:   #111E30;
+  --border: rgba(99,179,237,0.15);
+  --teal:   #38BDF8;
+  --teal2:  #0EA5E9;
+  --gold:   #FBBF24;
+  --green:  #34D399;
+  --purple: #A78BFA;
+  --muted:  #64748B;
+  --text:   #E2E8F0;
+  --white:  #FFFFFF;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(56,189,248,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 90% 100%, rgba(167,139,250,0.05) 0%, transparent 60%);
+}
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem; position:relative; }
+
+/* ── Progress bar ── */
+.progress-wrap { margin-bottom: 2.5rem; }
+
+.progress-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: .8rem;
+}
+
+.step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items:center; justify-content:center;
+  font-family: 'Syne', sans-serif;
+  font-size: .75rem;
+  font-weight: 700;
+  border: 2px solid var(--muted);
+  color: var(--muted);
+  background: var(--bg);
+  position: relative;
+  z-index: 1;
+  transition: all .3s;
+  flex-shrink: 0;
+}
+
+.step-dot.active {
+  border-color: var(--teal);
+  color: var(--bg);
+  background: var(--teal);
+}
+
+.step-dot.done {
+  border-color: var(--green);
+  color: var(--bg);
+  background: var(--green);
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--muted);
+  opacity: .3;
+  transition: all .3s;
+}
+
+.step-line.done { background: var(--green); opacity: .6; }
+
+.step-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.step-label {
+  font-size: .68rem;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  letter-spacing: .05em;
+  color: var(--muted);
+  text-align: center;
+  width: 32px;
+  transition: color .3s;
+}
+
+.step-label.active { color: var(--teal); }
+.step-label.done   { color: var(--green); }
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  animation: fadeUp .4s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Step 0: empresa ── */
+.dim-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: 'Syne', sans-serif;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--ac, var(--teal));
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: .28rem .9rem;
+  margin-bottom: 1.2rem;
+  opacity: .8;
+}
+
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: .5rem;
+  line-height: 1.2;
+}
+
+.card-question {
+  font-size: .95rem;
+  color: var(--teal);
+  font-style: italic;
+  margin-bottom: .5rem;
+}
+
+.card-desc {
+  font-size: .88rem;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 1.8rem;
+}
+
+/* Company input */
+.company-input {
+  width: 100%;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.1rem;
+  outline: none;
+  transition: border-color .2s;
+  margin-bottom: 1.5rem;
+}
+
+.company-input::placeholder { color: var(--muted); }
+.company-input:focus { border-color: var(--teal); }
+
+/* ── Options grid ── */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+  margin-bottom: 1.8rem;
+}
+
+@media (max-width:500px) { .options-grid { grid-template-columns: 1fr; } }
+
+.option {
+  background: rgba(255,255,255,.03);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+}
+
+.option:hover {
+  border-color: var(--ac, var(--teal));
+  background: rgba(56,189,248,.05);
+}
+
+.option.selected {
+  border-color: var(--ac, var(--teal));
+  background: rgba(56,189,248,.08);
+}
+
+.option.selected::after {
+  content: '✓';
+  position: absolute;
+  top: .6rem; right: .7rem;
+  font-size: .8rem;
+  color: var(--ac, var(--teal));
+  font-weight: 700;
+}
+
+.option-title {
+  font-family: 'Syne', sans-serif;
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: .3rem;
+}
+
+.option-desc {
+  font-size: .76rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* D4 blocks */
+.blocks-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .6rem;
+  margin-bottom: 1.8rem;
+}
+
+.block-option {
+  background: rgba(255,255,255,.03);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: .9rem 1.1rem;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: flex-start;
+  gap: .9rem;
+  position: relative;
+}
+
+.block-option:hover { border-color: var(--green); background: rgba(52,211,153,.05); }
+.block-option.selected { border-color: var(--green); background: rgba(52,211,153,.08); }
+
+.block-option.selected::after {
+  content: '✓';
+  position: absolute;
+  top: .7rem; right: .8rem;
+  font-size: .8rem;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.block-num {
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  background: rgba(52,211,153,.15);
+  color: var(--green);
+  font-family: 'Syne', sans-serif;
+  font-size: .72rem;
+  font-weight: 700;
+  display: flex; align-items:center; justify-content:center;
+  flex-shrink: 0;
+  margin-top: .05rem;
+}
+
+/* ── Navigation ── */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .88rem;
+  letter-spacing: .04em;
+  border: none;
+  border-radius: 10px;
+  padding: .8rem 1.8rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--teal2), var(--teal));
+  color: var(--bg);
+}
+
+.btn-primary:hover { opacity: .85; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: .3; cursor:not-allowed; transform:none; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+.selection-hint {
+  font-size: .78rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ── Result ── */
+.result-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.result-company {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: .3rem;
+}
+
+.result-subtitle {
+  font-size: .88rem;
+  color: var(--muted);
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media(max-width:500px) { .result-grid { grid-template-columns:1fr; } }
+
+.result-card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem 1.1rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-card::before {
+  content:'';
+  position:absolute; left:0; top:0; bottom:0;
+  width:3px;
+  background: var(--ac, var(--teal));
+  border-radius:3px 0 0 3px;
+}
+
+.result-dim {
+  font-family: 'Syne', sans-serif;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ac, var(--teal));
+  margin-bottom: .35rem;
+}
+
+.result-label {
+  font-family: 'Syne', sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #94A3B8;
+  margin-bottom: .4rem;
+}
+
+.result-value {
+  font-size: .92rem;
+  color: var(--white);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.result-tags { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.5rem; }
+
+.tag {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  padding: .2rem .65rem;
+  font-size: .72rem;
+  color: #CBD5E1;
+}
+
+.btn-restart {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .88rem;
+  border-radius: 10px;
+  padding: .85rem;
+  cursor: pointer;
+  transition: all .2s;
+  margin-top: .5rem;
+}
+
+.btn-restart:hover { border-color: var(--teal); color: var(--teal); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step-dot" id="dot0">①</div>
+      <div class="step-line" id="line01"></div>
+      <div class="step-dot" id="dot1">D1</div>
+      <div class="step-line" id="line12"></div>
+      <div class="step-dot" id="dot2">D2</div>
+      <div class="step-line" id="line23"></div>
+      <div class="step-dot" id="dot3">D3</div>
+      <div class="step-line" id="line34"></div>
+      <div class="step-dot" id="dot4">D4</div>
+      <div class="step-line" id="line45"></div>
+      <div class="step-dot" id="dot5">✓</div>
+    </div>
+    <div class="step-labels">
+      <span class="step-label" id="lbl0">Empresa</span>
+      <span class="step-label" id="lbl1">Tipologia</span>
+      <span class="step-label" id="lbl2">Modelo</span>
+      <span class="step-label" id="lbl3">Monetiz.</span>
+      <span class="step-label" id="lbl4">Cadeia</span>
+      <span class="step-label" id="lbl5">Resultado</span>
+    </div>
+  </div>
+
+  <!-- Step content -->
+  <div id="stepContent"></div>
+
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+const DIMS = [
+  {
+    id: "tipologia",
+    label: "D1 · Tipologia",
+    title: "Tipologia",
+    question: "Quem são os envolvidos na transação?",
+    desc: "Refere-se à natureza da relação económica entre os agentes envolvidos. Define quem vende e quem compra no mercado digital. Podes selecionar mais do que uma opção se a empresa operar em múltiplas tipologias.",
+    color: "#38BDF8",
+    multi: true,
+    options: [
+      { id:"b2c", title:"B2C", desc:"Empresa vende a consumidor individual sem fins comerciais. Ex: Netflix, Zara Online." },
+      { id:"b2b", title:"B2B", desc:"Empresa vende a outra empresa para uso na sua atividade. Ex: Alibaba, SAP." },
+      { id:"c2c", title:"C2C", desc:"Consumidor vende a consumidor; a plataforma facilita. Ex: OLX, eBay." },
+      { id:"c2b", title:"C2B", desc:"Indivíduo oferece serviço ou ativo a uma empresa. Ex: Uber, Fiverr." },
+      { id:"b2g", title:"B2G", desc:"Empresa vende a entidade pública com processos formais de contratação." }
+    ]
+  },
+  {
+    id: "modelo",
+    label: "D2 · Modelo de Negócio",
+    title: "Modelo de Negócio",
+    question: "Como se cria valor?",
+    desc: "Refere-se ao papel da organização na cadeia de valor digital e à forma como estrutura a sua proposta de valor. Podes selecionar mais do que uma opção se a empresa combinar modelos.",
+    color: "#FBBF24",
+    multi: true,
+    options: [
+      { id:"retailer",     title:"Retailer",      desc:"Mantém inventário próprio e vende diretamente online. Receita = margem de produto." },
+      { id:"marketplace",  title:"Marketplace",   desc:"Liga vendedores e compradores sem possuir inventário. Depende de efeitos de rede." },
+      { id:"subscricao",   title:"Subscrição",    desc:"Acesso contínuo mediante pagamento recorrente. Métrica-chave: churn e LTV." },
+      { id:"freemium",     title:"Freemium",      desc:"Versão básica gratuita; funcionalidades avançadas pagas." },
+      { id:"publicidade",  title:"Publicidade",   desc:"Serviço gratuito monetizado pela venda de atenção e dados." },
+      { id:"dropshipping", title:"Dropshipping",  desc:"Vende sem stock — fulfillment feito por terceiros." },
+      { id:"d2c",          title:"D2C",           desc:"Fabricante vende diretamente ao consumidor, sem intermediários." }
+    ]
+  },
+  {
+    id: "monetizacao",
+    label: "D3 · Monetização",
+    title: "Monetização",
+    question: "Como se captura receita?",
+    desc: "Refere-se ao mecanismo financeiro dominante — como a organização converte o valor criado em dinheiro. Seleciona o mecanismo principal e eventuais secundários.",
+    color: "#A78BFA",
+    multi: true,
+    options: [
+      { id:"venda",      title:"Venda Direta",    desc:"Receita = preço × quantidade. Exige gestão de inventário e logística." },
+      { id:"comissao",   title:"Comissão",        desc:"Receita = taxa × GMV transacionado. Escalável com liquidez na plataforma." },
+      { id:"publicidad", title:"Publicidade",     desc:"Receita por impressões/cliques. Depende de tráfego massivo e dados." },
+      { id:"sub",        title:"Subscrição",      desc:"Receita recorrente mensal/anual. Foco em retenção e redução de churn." },
+      { id:"dados",      title:"Dados como Ativo",desc:"Dados usados para segmentação, preços dinâmicos e melhoria de LTV." }
+    ]
+  }
+];
+
+const D4 = {
+  id: "cadeia",
+  label: "D4 · Cadeia de Valor Digital",
+  title: "Cadeia de Valor Digital",
+  question: "Como se operacionaliza a criação de valor?",
+  desc: "Seleciona os blocos que a empresa controla internamente. Quanto mais blocos controla, mais integrada é a sua cadeia de valor.",
+  color: "#34D399",
+  blocks: [
+    { id:"infra",   num:"B1", title:"Infraestrutura Digital",     desc:"Cloud, APIs, ERPs, cibersegurança, arquitetura de dados." },
+    { id:"aquis",   num:"B2", title:"Aquisição e Interface",       desc:"SEO/SEM, redes sociais, UX/UI, apps mobile, onboarding." },
+    { id:"coord",   num:"B3", title:"Coordenação",                 desc:"Matching algorítmico, pricing dinâmico, recomendações, automação." },
+    { id:"oper",    num:"B4", title:"Operações e Logística",       desc:"Inventário, fulfillment, last-mile, distribuição digital." },
+    { id:"dados",   num:"B5", title:"Ciclo de Dados",              desc:"Analytics, machine learning, A/B testing, otimização contínua." }
+  ]
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let state = { step: 0, company: "", d1:[], d2:[], d3:[], d4:[] };
+
+// ── Render helpers ────────────────────────────────────────────────────────────
+function updateProgress() {
+  for (let i = 0; i <= 5; i++) {
+    const dot = document.getElementById(`dot${i}`);
+    const lbl = document.getElementById(`lbl${i}`);
+    dot.className = 'step-dot' + (i < state.step ? ' done' : i === state.step ? ' active' : '');
+    lbl.className = 'step-label' + (i < state.step ? ' done' : i === state.step ? ' active' : '');
+    if (i < 5) {
+      const line = document.getElementById(`line${i}${i+1}`);
+      line.className = 'step-line' + (i < state.step ? ' done' : '');
+    }
+  }
+}
+
+function renderStep() {
+  updateProgress();
+  const el = document.getElementById('stepContent');
+
+  if (state.step === 0) { el.innerHTML = renderCompany(); return; }
+  if (state.step >= 1 && state.step <= 3) { el.innerHTML = renderDim(DIMS[state.step-1]); return; }
+  if (state.step === 4) { el.innerHTML = renderD4(); return; }
+  if (state.step === 5) { el.innerHTML = renderResult(); return; }
+}
+
+// Step 0: company name
+function renderCompany() {
+  return `
+  <div class="card">
+    <div class="dim-badge">Framework 4D · E-Commerce</div>
+    <div class="card-title">Qual é a empresa<br>que pretende analisar?</div>
+    <p class="card-desc" style="margin-top:.5rem">Este assistente guia-te pelas 4 dimensões da framework — Tipologia, Modelo de Negócio, Monetização e Cadeia de Valor Digital — para classificar qualquer organização de comércio eletrónico.</p>
+    <input class="company-input" id="companyIn" type="text" placeholder="Ex: Amazon, Spotify, OLX, Glovo..." value="${state.company}" />
+    <div class="nav">
+      <span class="selection-hint">Escreve o nome e clica em Seguinte</span>
+      <button class="btn btn-primary" onclick="goNext()">Seguinte →</button>
+    </div>
+  </div>`;
+}
+
+// Steps 1-3: dimension with options
+function renderDim(dim) {
+  const key = dim.id === 'tipologia' ? 'd1' : dim.id === 'modelo' ? 'd2' : 'd3';
+  const selected = state[key];
+
+  const opts = dim.options.map(o => `
+    <div class="option ${selected.includes(o.id) ? 'selected' : ''}"
+         style="--ac:${dim.color}"
+         onclick="toggleOption('${key}','${o.id}',${dim.multi})">
+      <div class="option-title">${o.title}</div>
+      <div class="option-desc">${o.desc}</div>
+    </div>`).join('');
+
+  return `
+  <div class="card">
+    <div class="dim-badge" style="--ac:${dim.color}">${dim.label}</div>
+    <div class="card-title">${dim.title}</div>
+    <div class="card-question">"${dim.question}"</div>
+    <p class="card-desc">${dim.desc}</p>
+    <div class="options-grid">${opts}</div>
+    <div class="nav">
+      <button class="btn btn-ghost" onclick="goBack()">← Anterior</button>
+      <span class="selection-hint">${selected.length} selecionado(s)</span>
+      <button class="btn btn-primary" onclick="goNext()" ${selected.length===0?'disabled':''}>Seguinte →</button>
+    </div>
+  </div>`;
+}
+
+// Step 4: D4 blocks
+function renderD4() {
+  const blocks = D4.blocks.map(b => `
+    <div class="block-option ${state.d4.includes(b.id) ? 'selected' : ''}"
+         onclick="toggleOption('d4','${b.id}',true)">
+      <div class="block-num">${b.num}</div>
+      <div>
+        <div class="option-title" style="font-size:.85rem">${b.title}</div>
+        <div class="option-desc">${b.desc}</div>
+      </div>
+    </div>`).join('');
+
+  return `
+  <div class="card">
+    <div class="dim-badge" style="--ac:${D4.color}">${D4.label}</div>
+    <div class="card-title">${D4.title}</div>
+    <div class="card-question">"${D4.question}"</div>
+    <p class="card-desc">${D4.desc}</p>
+    <div class="blocks-grid">${blocks}</div>
+    <div class="nav">
+      <button class="btn btn-ghost" onclick="goBack()">← Anterior</button>
+      <span class="selection-hint">${state.d4.length} bloco(s) selecionado(s)</span>
+      <button class="btn btn-primary" onclick="goNext()" ${state.d4.length===0?'disabled':''}>Ver Resultado →</button>
+    </div>
+  </div>`;
+}
+
+// Step 5: Result
+function renderResult() {
+  const dimData = [
+    { key:'d1', label:'D1 · Tipologia',           title:'Tipologia',             color:'#38BDF8', map: DIMS[0].options },
+    { key:'d2', label:'D2 · Modelo de Negócio',   title:'Modelo de Negócio',     color:'#FBBF24', map: DIMS[1].options },
+    { key:'d3', label:'D3 · Monetização',          title:'Monetização',           color:'#A78BFA', map: DIMS[2].options },
+    { key:'d4', label:'D4 · Cadeia de Valor',      title:'Cadeia de Valor Digital',color:'#34D399', map: D4.blocks }
+  ];
+
+  const cards = dimData.map(d => {
+    const names = state[d.key].map(id => {
+      const found = d.map.find(o => o.id === id);
+      return found ? found.title : id;
+    });
+    const tags = names.map(n => `<span class="tag">${n}</span>`).join('');
+    return `
+    <div class="result-card" style="--ac:${d.color}">
+      <div class="result-dim">${d.label}</div>
+      <div class="result-label">${d.title}</div>
+      <div class="result-tags">${tags}</div>
+    </div>`;
+  }).join('');
+
+  // Hybrid detection
+  const isHybrid = state.d1.length > 1 || state.d2.length > 1 || state.d3.length > 1;
+  const hybridNote = isHybrid
+    ? `<div style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;font-size:.84rem;color:#FDE68A;line-height:1.6">
+        <strong style="font-family:'Syne',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:.4rem">⚡ Caso Híbrido Detetado</strong>
+        Esta empresa opera em múltiplas categorias em simultâneo, o que é comum em grandes plataformas digitais. A framework classifica o modelo dominante em primeiro lugar.
+      </div>`
+    : '';
+
+  return `
+  <div class="card">
+    <div class="result-header">
+      <div class="result-company">${state.company}</div>
+      <div class="result-subtitle">Perfil nas 4 dimensões da Framework 4D</div>
+    </div>
+    <div class="result-grid">${cards}</div>
+    ${hybridNote}
+    <button class="btn-restart" onclick="restart()">↩ Analisar outra empresa</button>
+  </div>`;
+}
+
+// ── Interactions ──────────────────────────────────────────────────────────────
+function toggleOption(key, id, multi) {
+  if (multi) {
+    if (state[key].includes(id)) state[key] = state[key].filter(x => x !== id);
+    else state[key].push(id);
+  } else {
+    state[key] = [id];
+  }
+  renderStep();
+}
+
+function goNext() {
+  if (state.step === 0) {
+    const v = document.getElementById('companyIn').value.trim();
+    if (!v) return;
+    state.company = v;
+  }
+  state.step++;
+  renderStep();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function goBack() {
+  state.step--;
+  renderStep();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function restart() {
+  state = { step:0, company:"", d1:[], d2:[], d3:[], d4:[] };
+  renderStep();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// Enter key on company input
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && state.step === 0) goNext();
+});
+
+// Init
+renderStep();
+</script>
+</body>
+</html>
